@@ -1,0 +1,5 @@
+source "D:/SISTEMAS_EMBARCADOS/ESP-IDF/components/app_update/Kconfig.projbuild"
+source "D:/SISTEMAS_EMBARCADOS/ESP-IDF/components/bootloader/Kconfig.projbuild"
+source "D:/SISTEMAS_EMBARCADOS/ESP-IDF/components/esptool_py/Kconfig.projbuild"
+source "D:/SISTEMAS_EMBARCADOS/ESP-IDF/components/partition_table/Kconfig.projbuild"
+source "C:/i2c_self_test/main/Kconfig.projbuild"

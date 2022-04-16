@@ -1,0 +1,20 @@
+{
+    "project_name":       "bootloader",
+    "project_path":       "D:/SISTEMAS_EMBARCADOS/ESP-IDF/components/bootloader/subproject",
+    "build_dir":          "C:/i2c_self_test/build/bootloader",
+    "config_file":        "C:/i2c_self_test/sdkconfig",
+    "config_defaults":    "",
+    "app_elf":            "bootloader.elf",
+    "app_bin":            "bootloader.bin",
+    "git_revision":       "v4.3.1",
+    "target":             "esp32",
+    "phy_data_partition": "",
+    "monitor_baud" :      "115200",
+    "monitor_toolprefix": "xtensa-esp32-elf-",
+    "config_environment" : {
+        "COMPONENT_KCONFIGS" : "D:/SISTEMAS_EMBARCADOS/ESP-IDF/components/efuse/Kconfig;D:/SISTEMAS_EMBARCADOS/ESP-IDF/components/esp32/Kconfig;D:/SISTEMAS_EMBARCADOS/ESP-IDF/components/esp_common/Kconfig;D:/SISTEMAS_EMBARCADOS/ESP-IDF/components/esp_system/Kconfig;D:/SISTEMAS_EMBARCADOS/ESP-IDF/components/log/Kconfig;D:/SISTEMAS_EMBARCADOS/ESP-IDF/components/newlib/Kconfig;D:/SISTEMAS_EMBARCADOS/ESP-IDF/components/spi_flash/Kconfig",
+        "COMPONENT_KCONFIGS_PROJBUILD" : "D:/SISTEMAS_EMBARCADOS/ESP-IDF/components/bootloader/Kconfig.projbuild;D:/SISTEMAS_EMBARCADOS/ESP-IDF/components/esptool_py/Kconfig.projbuild;D:/SISTEMAS_EMBARCADOS/ESP-IDF/components/partition_table/Kconfig.projbuild"
+    },
+    "build_components" : [ "bootloader", "bootloader_support", "efuse", "esp32", "esp_common", "esp_hw_support", "esp_rom", "esp_system", "esptool_py", "hal", "log", "main", "micro-ecc", "newlib", "partition_table", "soc", "spi_flash", "xtensa", "" ],
+    "build_component_paths" : [ "D:/SISTEMAS_EMBARCADOS/ESP-IDF/components/bootloader", "D:/SISTEMAS_EMBARCADOS/ESP-IDF/components/bootloader_support", "D:/SISTEMAS_EMBARCADOS/ESP-IDF/components/efuse", "D:/SISTEMAS_EMBARCADOS/ESP-IDF/components/esp32", "D:/SISTEMAS_EMBARCADOS/ESP-IDF/components/esp_common", "D:/SISTEMAS_EMBARCADOS/ESP-IDF/components/esp_hw_support", "D:/SISTEMAS_EMBARCADOS/ESP-IDF/components/esp_rom", "D:/SISTEMAS_EMBARCADOS/ESP-IDF/components/esp_system", "D:/SISTEMAS_EMBARCADOS/ESP-IDF/components/esptool_py", "D:/SISTEMAS_EMBARCADOS/ESP-IDF/components/hal", "D:/SISTEMAS_EMBARCADOS/ESP-IDF/components/log", "D:/SISTEMAS_EMBARCADOS/ESP-IDF/components/bootloader/subproject/main", "D:/SISTEMAS_EMBARCADOS/ESP-IDF/components/bootloader/subproject/components/micro-ecc", "D:/SISTEMAS_EMBARCADOS/ESP-IDF/components/newlib", "D:/SISTEMAS_EMBARCADOS/ESP-IDF/components/partition_table", "D:/SISTEMAS_EMBARCADOS/ESP-IDF/components/soc", "D:/SISTEMAS_EMBARCADOS/ESP-IDF/components/spi_flash", "D:/SISTEMAS_EMBARCADOS/ESP-IDF/components/xtensa", "" ]
+}

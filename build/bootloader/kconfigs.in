@@ -1,0 +1,7 @@
+source "D:/SISTEMAS_EMBARCADOS/ESP-IDF/components/efuse/Kconfig"
+source "D:/SISTEMAS_EMBARCADOS/ESP-IDF/components/esp32/Kconfig"
+source "D:/SISTEMAS_EMBARCADOS/ESP-IDF/components/esp_common/Kconfig"
+source "D:/SISTEMAS_EMBARCADOS/ESP-IDF/components/esp_system/Kconfig"
+source "D:/SISTEMAS_EMBARCADOS/ESP-IDF/components/log/Kconfig"
+source "D:/SISTEMAS_EMBARCADOS/ESP-IDF/components/newlib/Kconfig"
+source "D:/SISTEMAS_EMBARCADOS/ESP-IDF/components/spi_flash/Kconfig"
