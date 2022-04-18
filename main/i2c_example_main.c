@@ -154,7 +154,7 @@ void app_main(void)
     /* inicia o wifi manager */
 	wifi_manager_start();
 
-    /* register a callback as an example to how you can integrate your code with the wifi manager */
+    /* Funções de callback para os eventos de aquisição de IP e desconexão */
 	wifi_manager_set_callback(WM_EVENT_STA_GOT_IP, &wifi_on);
 	wifi_manager_set_callback(WM_EVENT_STA_DISCONNECTED, &wifi_off);
 
@@ -441,12 +441,12 @@ static void sensor_display_task(void *pvParameter)
             gpio_set_level(MOT_PIN, 1);
             on = 0;
         }
-        
+
     // Formatação para publicar na plataforma ThingSpeak
         sprintf( str, "field1=%.2f&field2=%d&status=MQTTPUBLISH", floatData, on); 
         centena = (uint8_t)floatData / 100;
-        dezena  = (uint8_t)(floatData / 10) % 10;
-        unidade = (uint8_t)floatData % 10;
+        dezena  = (uint8_t)(floatData / 10) % 10; // Que tal (uint8_t)(floatData%100) ?
+        unidade = (uint8_t)floatData % 10; // Que tal (uint8_t)(dezena%10) ?
 
         set_display(2,9);
         char_display(centena + 48);
