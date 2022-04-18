@@ -71,6 +71,7 @@
 #define TOPICO_UMIDADE "umidade"
 #define TOPICO_UMIDADE_WRITE "channels/1705493/publish"
 #define TOPICO_CHUVA "chuva"
+#define DASHTIME 8000
 
 
 // Mapa display
@@ -88,7 +89,8 @@
 
 // ========== Variáveis Globais ==========
 static const char *TAG = "Regador";
-QueueHandle_t xMailbox_Sensor;  
+QueueHandle_t xMailbox_Sensor; 
+QueueHandle_t xMailbox_Motor;   
 SemaphoreHandle_t xSemaphore;
 static EventGroupHandle_t wifi_event_group;
 static EventGroupHandle_t mqtt_event_group;
@@ -96,14 +98,12 @@ const static int WIFI_CONNECTED_BIT = BIT0;
 esp_mqtt_client_handle_t client;
 
 
-//extern const uint8_t cloudmqtt_com_crt_start[] asm("_binary_cloudmqtt_com_crt_start");
-//extern const uint8_t cloudmqtt_com_crt_end[]   asm("_binary_cloudmqtt_com_crt_end");
-
 // ========== Protótipos ==========
 static void sensor_display_task(void *pvParameter);
 static void sensor_umidade_task(void *pvParameter);
 static void IRAM_ATTR gpio_isr_handler(void * pvParameter);
 static void motor_task(void *pvParameter);
+static void dashboard_task(void *pvParameter);
 
 static void init_display();
 static void init_botao();
@@ -111,7 +111,7 @@ static void comando_display(uint8_t data);
 static void arrange_display(uint8_t data);
 static void char_display(uint8_t data);
 static void char_display(uint8_t data);
-static void clear_display();
+
 static void set_display(uint8_t line, uint8_t column);
 
 static void mqtt_app_start( void );
@@ -119,6 +119,8 @@ void wifi_off(void *pvParameter);
 void wifi_on(void *pvParameter);
 static esp_err_t mqtt_event_handler_cb(esp_mqtt_event_handle_t event);
 void monitoring_task(void *pvParameter);
+
+
 // ========== Inicialização ==========
 
 
@@ -179,9 +181,15 @@ void app_main(void)
     /* comando necessário pois o semáforo começa em zero */
     xSemaphoreGive(xSemaphore);
 
-    if((xMailbox_Sensor = xQueueCreate(1, sizeof(uint8_t)))== NULL)
+    if((xMailbox_Sensor = xQueueCreate(1, sizeof(float)))== NULL)
 	{
 		ESP_LOGI(TAG, "Não é possível criar xQueue_Sensor...");	
+        return;	
+	}
+
+    if((xMailbox_Motor = xQueueCreate(1, sizeof(uint8_t)))== NULL)
+	{
+		ESP_LOGI(TAG, "Não é possível criar xQueue_Motor...");	
         return;	
 	}
 
@@ -200,6 +208,12 @@ void app_main(void)
     if((xTaskCreate(motor_task, "motor_task", 1024 * 2, (void *)0, 10, NULL)) != pdTRUE)
 	{
 		ESP_LOGI(TAG, "Não é possível criar motor_task...");
+        return;		
+	}
+
+    if((xTaskCreate(dashboard_task, "dashboard_task", 1024 * 2, (void *)0, 10, NULL)) != pdTRUE)
+	{
+		ESP_LOGI(TAG, "Não é possível criar dashboard_task...");
         return;		
 	}
 
@@ -370,6 +384,9 @@ static esp_err_t mqtt_event_handler_cb(esp_mqtt_event_handle_t event)
             if( DEBUG )
                 ESP_LOGI(TAG, "MQTT_EVENT_DELETED");
             break;
+        default:
+            if( DEBUG )
+				ESP_LOGI(TAG, "MQTT_EVENTOS_ERROR");
     }
     return ESP_OK;
 }
@@ -391,8 +408,7 @@ static void mqtt_app_start( void )
     */
     const esp_mqtt_client_config_t mqtt_cfg = 
     {
-		.uri = "mqtt://mqtt3.thingspeak.com:1883", //"mqtt://m12.cloudmqtt.com:17751",
-        //.cert_pem = (const char *)cloudmqtt_com_crt_start,
+		.uri = "mqtt://mqtt3.thingspeak.com:1883", 
 		.username = "KwM6BwQyJRINNSQyCjktNgs",
 		.password = "d34VKzuqX08JpgFZX8BqQmuJ",
         .client_id = "KwM6BwQyJRINNSQyCjktNgs"
@@ -409,44 +425,44 @@ static void mqtt_app_start( void )
 static void sensor_display_task(void *pvParameter)
 {
     ESP_LOGI(TAG, "sensor_display_task");
-    uint8_t intData;
+    uint8_t on = 0;
     float floatData;
     char str[100]; 
 
     int centena;
     int dezena;
     int unidade;
-    int on = 0;
+    
 
     while (1) 
     { 
-        xQueuePeek(xMailbox_Sensor, &intData, portMAX_DELAY);
+        //xQueuePeek(xMailbox_Sensor, &intData, portMAX_DELAY);
+        xQueuePeek(xMailbox_Sensor, &floatData, portMAX_DELAY);
+        
+        ESP_LOGI(TAG, "floatData: %.2f", floatData);
 
-        ESP_LOGI(TAG, "floatData: %d", intData);
-
-        floatData = (100 - (intData * 100) / 255 );
-        ESP_LOGI(TAG, "Porcentagem de Umidade: %.2f", floatData);
-
-        // Formatação para publicar na plataforma ThingSpeak
- //       sprintf( str, "field1=%.2f&status=MQTTPUBLISH", floatData); 
-
-//      sprintf( str, "{\"umidade\":%.2f}", floatData);
-        if(floatData < 10)
+        
+        if(floatData < 70)
         {
-           gpio_set_level(MOT_PIN, 0);
-           on = 1;
+            gpio_set_level(MOT_PIN, 0);
+            // Envia o valor do sensor para a fila "xQueueMotor"
+            on = 1;
+            xQueueOverwrite(xMailbox_Motor, &on);
+           
         }
         else
         {
             gpio_set_level(MOT_PIN, 1);
+            // Envia o valor do sensor para a fila "xQueueMotor"
             on = 0;
+            xQueueOverwrite(xMailbox_Motor, &on);
+          
         }
 
-    // Formatação para publicar na plataforma ThingSpeak
-        sprintf( str, "field1=%.2f&field2=%d&status=MQTTPUBLISH", floatData, on); 
+    
         centena = (uint8_t)floatData / 100;
-        dezena  = (uint8_t)(floatData / 10) % 10; // Que tal (uint8_t)(floatData%100) ?
-        unidade = (uint8_t)floatData % 10; // Que tal (uint8_t)(dezena%10) ?
+        dezena  = (uint8_t)(floatData / 10) % 10; 
+        unidade = (uint8_t)floatData % 10;
 
         set_display(2,9);
         char_display(centena + 48);
@@ -454,11 +470,7 @@ static void sensor_display_task(void *pvParameter)
         char_display(unidade + 48);
         char_display(37);
         
-        if( esp_mqtt_client_publish( client, TOPICO_UMIDADE_WRITE, str, strlen( str ), 0, 0 ) == 0 )
-		{
-			if( DEBUG )
-                ESP_LOGI( TAG, "Mensagem publicada com sucesso.");
-		}
+       
 
         vTaskDelay(2000 / portTICK_RATE_MS); 
     }
@@ -468,6 +480,8 @@ static void sensor_display_task(void *pvParameter)
 
 static void sensor_umidade_task(void *pvParameter)
 {
+    
+    float floatData = 0;
     ESP_LOGI(TAG, "sensor_umidade_task");
 
     // Configurando a resolução do ADC para 10bits        
@@ -482,9 +496,13 @@ static void sensor_umidade_task(void *pvParameter)
         uint8_t sensorValue = adc1_get_raw(ADC1_CHANNEL_0);
 
         ESP_LOGI(TAG, "valor: %d", sensorValue);
+        
+        floatData = (100 - (sensorValue * 100) / 255 );
+        ESP_LOGI(TAG, "Porcentagem de Umidade: %.2f", floatData);
+ 
 
         // Envia o valor do sensor para a fila "xQueueSensor"
-        xQueueOverwrite(xMailbox_Sensor, &sensorValue);
+        xQueueOverwrite(xMailbox_Sensor, &floatData);
  
         // Descarrega os buffers de saída de dados
         fflush(stdout);
@@ -506,13 +524,43 @@ static void motor_task(void *pvParameter)
          gpio_set_level(MOT_PIN, 1);
         vTaskDelay(2000 / portTICK_PERIOD_MS);
     }
+    vTaskDelete(NULL);
+
 }
 
-// ==========================================================================================================
-static void clear_display()
+
+static void dashboard_task(void *pvParameter)
 {
-    comando_display(0x01);
+    float dashboardData;
+    char str[100]; 
+    uint32_t on = 0;
+
+
+    while(1)
+    {
+        xQueuePeek(xMailbox_Sensor, &dashboardData, portMAX_DELAY);
+        xQueuePeek(xMailbox_Motor, &on, portMAX_DELAY);
+        
+        // Formatação para publicar na plataforma ThingSpeak
+        sprintf( str, "field1=%.2f&field2=%d&status=MQTTPUBLISH", dashboardData, on); 
+       
+
+        if( esp_mqtt_client_publish( client, TOPICO_UMIDADE_WRITE, str, strlen( str ), 0, 0 ) == 0 )
+		{
+			if( DEBUG )
+                ESP_LOGI( TAG, "Mensagem publicada com sucesso.");
+		}
+        vTaskDelay(DASHTIME / portTICK_PERIOD_MS);
+
+        
+     
+    }
+    vTaskDelete(NULL);
 }
+
+
+// ==========================================================================================================
+
 
 static void init_display()
 {
