@@ -1,8 +1,21 @@
+/*
+  ******************************************************************************
+  * @file           : i2c_example.c.c
+  * @brief          : Programa principal
+  ******************************************************************************
+  * //  Projeto - Regador Intligente
+  * //  Disciplina: Sistema Operacional em Tempo Real
+  * //  Curso de Pós Graduação em Sistemas Embarcados - SENAI-SP
+  * //  Alunos: 
+  * //          Marcos Flávio Soares
+  * //          Leonardo Pongillo
+  ******************************************************************************
+*/
+
 // ========== Bibliotecas ==========
 #include <stdio.h>
 #include <stdint.h>  
 #include <string.h>
-
 #include <stddef.h>
 
 /*
@@ -55,7 +68,6 @@
 #include "esp_tls.h"
 
 
-
 /**
  * Lwip
  */
@@ -68,7 +80,7 @@
 
 // ========== Defines ==========
 #define DEBUG 1
-#define TOPICO_UMIDADE "umidade"
+//#define TOPICO_UMIDADE "umidade"
 #define TOPICO_UMIDADE_WRITE "channels/1705493/publish"
 #define TOPICO_CHUVA "chuva"
 #define DASHTIME 8000
@@ -119,6 +131,7 @@ void wifi_off(void *pvParameter);
 void wifi_on(void *pvParameter);
 static esp_err_t mqtt_event_handler_cb(esp_mqtt_event_handle_t event);
 void monitoring_task(void *pvParameter);
+
 
 
 // ========== Inicialização ==========
@@ -293,13 +306,6 @@ static esp_err_t mqtt_event_handler_cb(esp_mqtt_event_handle_t event)
                 ESP_LOGI(TAG, "MQTT_CONECTADO_AO_BROKER");
 
             /**
-             * Assina o tópico umidade assim que o ESP32 se conectar ao broker MQTT;
-             * onde, 
-             * esp_mqtt_client_subscribe( Handle_client, TOPICO_STRING, QoS );
-             */
- //           esp_mqtt_client_subscribe( client, TOPICO_UMIDADE, 0 );
-
-            /**
              * Se chegou aqui é porque o ESP32 está conectado ao Broker MQTT; 
              * A notificação é feita setando em nível 1 o bit CONNECTED_BIT da 
              * variável mqtt_event_group;
@@ -427,8 +433,6 @@ static void sensor_display_task(void *pvParameter)
     ESP_LOGI(TAG, "sensor_display_task");
     uint8_t on = 0;
     float floatData;
-    char str[100]; 
-
     int centena;
     int dezena;
     int unidade;
@@ -436,7 +440,6 @@ static void sensor_display_task(void *pvParameter)
 
     while (1) 
     { 
-        //xQueuePeek(xMailbox_Sensor, &intData, portMAX_DELAY);
         xQueuePeek(xMailbox_Sensor, &floatData, portMAX_DELAY);
         
         ESP_LOGI(TAG, "floatData: %.2f", floatData);
@@ -509,6 +512,8 @@ static void sensor_umidade_task(void *pvParameter)
 
         vTaskDelay(2000 / portTICK_PERIOD_MS);
     }
+    vTaskDelete(NULL);
+
 }
 
 static void motor_task(void *pvParameter)
