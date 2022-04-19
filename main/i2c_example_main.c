@@ -3,12 +3,12 @@
   * @file           : i2c_example.c.c
   * @brief          : Programa principal
   ******************************************************************************
-  * //  Projeto - Regador Intligente
+  * //  Projeto - Regador Inteligente
   * //  Disciplina: Sistema Operacional em Tempo Real
   * //  Curso de Pós Graduação em Sistemas Embarcados - SENAI-SP
   * //  Alunos: 
-  * //          Marcos Flávio Soares
   * //          Leonardo Pongillo
+  * //          Marcos Flávio Soares
   ******************************************************************************
 */
 
